@@ -7,7 +7,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h5>Tambah Material</h5>
+                    <h5>Tambah Produk</h5>
                 </div>
 
                 <div class="card-block">
@@ -15,15 +15,15 @@
                         @csrf
 
                         <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Nama Material</label>
+                            <label class="col-sm-2 col-form-label">Nama Produk</label>
                             <div class="col-sm-10">
                                 <input type="text" name="name" class="form-control"
-                                    placeholder="Masukkan nama material" required>
+                                    placeholder="Masukkan nama produk" required>
                             </div>
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Kode Material</label>
+                            <label class="col-sm-2 col-form-label">Kode Produk</label>
                             <div class="col-sm-10">
                                 <input type="text" name="code" class="form-control" placeholder="Contoh: MAT-001"
                                     required>
@@ -31,7 +31,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Harga Material</label>
+                            <label class="col-sm-2 col-form-label">Harga Produk</label>
                             <div class="col-sm-10">
                                 <input type="number" name="price" class="form-control" placeholder="Masukkan harga"
                                     required>
@@ -47,7 +47,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Foto Material</label>
+                            <label class="col-sm-2 col-form-label">Foto Produk</label>
                             <div class="col-sm-10">
                                 <input type="file" name="image" class="form-control">
                             </div>
@@ -66,8 +66,6 @@
             </div>
             <div class="card">
                 <div class="card-header">
-                    <h5>Hover Table</h5>
-                    <span>use class <code>table-hover</code> inside table element</span>
                     <div class="card-header-right">
                         <ul class="list-unstyled card-option">
                             <li><i class="fa fa fa-wrench open-card-option"></i></li>
@@ -84,7 +82,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>Nama Material</th>
+                                    <th>Nama Produk</th>
                                     <th>Kode</th>
                                     <th>Harga</th>
                                     <th>Stok</th>

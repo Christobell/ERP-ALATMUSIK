@@ -66,8 +66,6 @@
             </div>
             <div class="card">
                 <div class="card-header">
-                    <h5>Hover Table</h5>
-                    <span>use class <code>table-hover</code> inside table element</span>
                     <div class="card-header-right">
                         <ul class="list-unstyled card-option">
                             <li><i class="fa fa fa-wrench open-card-option"></i></li>
@@ -93,7 +91,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($material as $index => $data)
+                                @foreach ($materials as $index => $data)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td class="fw-semibold">{{ $data->name }}</td>

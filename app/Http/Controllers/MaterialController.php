@@ -10,88 +10,79 @@ class MaterialController extends Controller
 {
     public function index()
     {
-        $material = Material::all();
-        return view('manufacturing.material.index', compact('material'));
+        $materials = Material::all(); // ganti jadi $materials (plural)
+        return view('manufacturing.material.index', compact('materials'));
     }
 
     public function show($id)
     {
-        $material = Material::find($id);
+        $material = Material::findOrFail($id);
         return view('manufacturing.material.update', compact('material'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'code' => 'required',
-            'price' => 'required',
-            'stock' => 'required',
-            'image' => 'required',
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|unique:material,code',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // dd($request->all()); 
-
-        $imagePath = null;
+        $data = $request->only(['name', 'code', 'price', 'stock']);
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imagePath = $image->store('materials', 'public');
+            $data['image'] = $request->file('image')->store('materials', 'public');
         }
 
-        Material::create([
-            'name' => $request->name,
-            'code' => $request->code,
-            'price' => $request->price,
-            'stock' => $request->stock,
-            'image' => $imagePath
-        ]);
+        Material::create($data);
 
-        return redirect()->route('material.index')->with('success', 'Material created successfully.');
+        return redirect()->route('material.index')->with('success', 'Material dibuat.');
     }
 
     public function update(Request $request, $id)
     {
-        $material = Material::find($id);
-
+        
+        $material = Material::findOrFail($id);
 
         $request->validate([
-            'name' => 'required',
-            'code' => 'required',
-            'price' => 'required',
-            'stock' => 'required',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|unique:material,code,' . $material->id,
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'image' => 'nullable',
         ]);
-        // dd($request->all());
+        
 
+        $data = $request->only(['name', 'code', 'price', 'stock']);
 
-        $imagePath = $material->image;
         if ($request->hasFile('image')) {
-
-            if ($material->image && Storage::disk('public')->exists($material->image)) {
-                Storage::disk('public')->delete($material->image);
+            // Hapus gambar lama
+            if ($material->image && Storage::exists('public/' . $material->image)) {
+                Storage::delete('public/' . $material->image);
             }
-
-            $imagePath = $request->file('image')->store('materials', 'public');
-            $material->image = $imagePath;
+            
+            // Simpan gambar baru
+            $data['image'] = $request->file('image')->store('materials', 'public');
         }
 
-        $material->update([
-            'name' => $request->name,
-            'code' => $request->code,
-            'price' => $request->price,
-            'stock' => $request->stock,
-            'image' => $imagePath
-        ]);
+        $material->update($data);
 
-        return redirect()->route('material.index')->with('success', 'Material updated successfully.');
+        return redirect()->route('material.index')->with('success', 'Material diperbarui.');
     }
 
     public function destroy($id)
     {
-        $material = Material::find($id);
+        $material = Material::findOrFail($id);
+        
+        // Hapus gambar jika ada
+        if ($material->image && Storage::exists('public/' . $material->image)) {
+            Storage::delete('public/' . $material->image);
+        }
+        
         $material->delete();
-        return redirect()->route('material.index')->with('success', 'Material deleted successfully.');
+        
+        return redirect()->route('material.index')->with('success', 'Material dihapus.');
     }
 }
