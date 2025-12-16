@@ -5,177 +5,163 @@
 <div class="pcoded-content">
     <div class="pcoded-inner-content">
         
-        {{-- CARD 1: FILTER & STATISTIK --}}
         <div class="card">
             <div class="card-header">
-                <h5>Filter & Statistik Purchase Order</h5>
-                <div class="card-header-right">
-                    <ul class="list-unstyled card-option">
-                        <li><i class="fa fa fa-wrench open-card-option"></i></li>
-                        <li><i class="fa fa-window-maximize full-card"></i></li>
-                        <li><i class="fa fa-minus minimize-card"></i></li>
-                    </ul>
-                </div>
+                <h5>Tambah Purchase Order Baru</h5>
             </div>
             <div class="card-block">
-                <form action="{{ route('purchase-orders.index') }}" method="GET" id="filterForm">
+                <form action="{{ route('purchase-order.store') }}" method="POST" id="poForm">
+                    @csrf
+                    
                     <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Status PO</label>
-                                <select name="status" class="form-control">
-                                    <option value="all">Semua Status</option>
-                                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                </select>
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Nomor PO</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="po_number" class="form-control" 
+                                           placeholder="Contoh: PO-001" required>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Vendor</label>
-                                <select name="vendor_id" class="form-control">
-                                    <option value="">Semua Vendor</option>
-                                    @foreach($vendors as $vendor)
-                                        <option value="{{ $vendor->id }}" {{ request('vendor_id') == $vendor->id ? 'selected' : '' }}>
-                                            {{ $vendor->code }} - {{ $vendor->company_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Tanggal PO</label>
+                                <div class="col-sm-8">
+                                    <input type="date" name="order_date" class="form-control" 
+                                           value="{{ date('Y-m-d') }}" required>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label>Dari Tanggal</label>
-                                <input type="date" name="start_date" class="form-control" 
-                                       value="{{ request('start_date') }}">
+                    </div>
+                    
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label">Vendor</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="vendor_name" class="form-control" 
+                                   placeholder="Nama vendor/perusahaan" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Kontak Person</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="contact_person" class="form-control" 
+                                           placeholder="Nama kontak di vendor">
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label>Sampai Tanggal</label>
-                                <input type="date" name="end_date" class="form-control" 
-                                       value="{{ request('end_date') }}">
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Telepon</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="vendor_phone" class="form-control" 
+                                           placeholder="Telepon vendor">
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-2">
-                            <div class="form-group" style="padding-top: 25px;">
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="fa fa-filter"></i> Filter
-                                </button>
-                                <a href="{{ route('purchase-orders.index') }}" class="btn btn-secondary btn-sm">
-                                    <i class="fa fa-refresh"></i> Reset
-                                </a>
+                    </div>
+                    
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label">Alamat Pengiriman</label>
+                        <div class="col-sm-10">
+                            <textarea name="delivery_address" class="form-control" rows="2" 
+                                      placeholder="Alamat lengkap pengiriman" required></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label">Item/Material</label>
+                        <div class="col-sm-10">
+                            <div id="items-container">
+                                <div class="item-row row mb-2">
+                                    <div class="col-md-5">
+                                        <select name="items[0][material_id]" class="form-control select-material" required>
+                                            <option value="">-- Pilih Material --</option>
+                                            @foreach($materials as $material)
+                                                <option value="{{ $material->id }}" 
+                                                        data-unit="{{ $material->unit }}"
+                                                        data-price="{{ $material->price }}">
+                                                    {{ $material->code }} - {{ $material->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" name="items[0][quantity]" 
+                                               class="form-control item-quantity" 
+                                               placeholder="Qty" min="1" value="1" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" name="items[0][unit]" 
+                                               class="form-control item-unit" 
+                                               placeholder="Satuan" readonly required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" name="items[0][unit_price]" 
+                                               class="form-control item-price" 
+                                               placeholder="Harga" min="0" step="0.01" required>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                            <button type="button" class="btn btn-sm btn-info mt-2" onclick="addItem()">
+                                <i class="fa fa-plus"></i> Tambah Item
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Total Amount</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="total_amount_display" id="total_amount_display" 
+                                           class="form-control" readonly value="Rp 0">
+                                    <input type="hidden" name="total_amount" id="total_amount" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Status</label>
+                                <div class="col-sm-8">
+                                    <select name="status" class="form-control" required>
+                                        <option value="draft" selected>Draft</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label">Catatan</label>
+                        <div class="col-sm-10">
+                            <textarea name="notes" class="form-control" rows="2" 
+                                      placeholder="Catatan tambahan"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group row">
+                        <div class="col-sm-10 offset-sm-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save"></i> Simpan Purchase Order
+                            </button>
+                            <a href="{{ route('purchase-order.index') }}" class="btn btn-default">Batal</a>
                         </div>
                     </div>
                 </form>
-                
-                {{-- STATISTIK --}}
-                <div class="row mt-3">
-                    <div class="col-md-2 col-sm-6">
-                        <div class="card stat-card bg-primary text-white">
-                            <div class="card-body">
-                                <h6 class="card-title">Total PO</h6>
-                                <h3 class="card-text">{{ $totalPO }}</h3>
-                                <small>Semua Status</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2 col-sm-6">
-                        <div class="card stat-card bg-warning text-white">
-                            <div class="card-body">
-                                <h6 class="card-title">Pending</h6>
-                                <h3 class="card-text">{{ $pendingCount }}</h3>
-                                <small>Menunggu Approval</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2 col-sm-6">
-                        <div class="card stat-card bg-success text-white">
-                            <div class="card-body">
-                                <h6 class="card-title">Approved</h6>
-                                <h3 class="card-text">{{ $approvedCount }}</h3>
-                                <small>Disetujui</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2 col-sm-6">
-                        <div class="card stat-card bg-info text-white">
-                            <div class="card-body">
-                                <h6 class="card-title">Completed</h6>
-                                <h3 class="card-text">{{ $completedCount }}</h3>
-                                <small>Selesai</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2 col-sm-6">
-                        <div class="card stat-card bg-danger text-white">
-                            <div class="card-body">
-                                <h6 class="card-title">Rejected</h6>
-                                <h3 class="card-text">{{ $rejectedCount }}</h3>
-                                <small>Ditolak</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2 col-sm-6">
-                        <div class="card stat-card bg-secondary text-white">
-                            <div class="card-body">
-                                <h6 class="card-title">Total Nilai</h6>
-                                <h3 class="card-text">Rp {{ number_format($totalValue, 0, ',', '.') }}</h3>
-                                <small>Grand Total</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         
-        {{-- CARD 2: TOMBOL AKSI CEPAT --}}
-        <div class="card">
-            <div class="card-header">
-                <h5>Aksi Cepat</h5>
-            </div>
-            <div class="card-block">
-                <div class="row">
-                    <div class="col-md-3">
-                        <a href="{{ route('purchase-orders.create') }}" class="btn btn-primary btn-block">
-                            <i class="fa fa-plus-circle"></i> Buat PO Baru
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-info btn-block" onclick="printReport()">
-                            <i class="fa fa-print"></i> Cetak Laporan
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-success btn-block" onclick="exportToExcel()">
-                            <i class="fa fa-file-excel"></i> Export Excel
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-warning btn-block" onclick="showPendingPO()">
-                            <i class="fa fa-clock"></i> PO Pending
-                            <span class="badge bg-danger">{{ $pendingCount }}</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        {{-- CARD 3: TABEL DAFTAR PURCHASE ORDER --}}
         <div class="card">
             <div class="card-header">
                 <h5>Daftar Purchase Order</h5>
@@ -184,200 +170,79 @@
                         <li><i class="fa fa fa-wrench open-card-option"></i></li>
                         <li><i class="fa fa-window-maximize full-card"></i></li>
                         <li><i class="fa fa-minus minimize-card"></i></li>
-                        <li><i class="fa fa-refresh reload-card" onclick="location.reload()"></i></li>
+                        <li><i class="fa fa-refresh reload-card"></i></li>
+                        <li><i class="fa fa-trash close-card"></i></li>
                     </ul>
                 </div>
             </div>
             <div class="card-block table-border-style">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle po-table">
+                    <table class="table table-hover align-middle purchase-order-table">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>No. PO</th>
+                                <th>Nomor PO</th>
                                 <th>Vendor</th>
                                 <th>Tanggal PO</th>
-                                <th>Delivery Date</th>
+                                <th>Total Amount</th>
+                                <th>Items</th>
                                 <th>Status</th>
-                                <th>Jumlah Item</th>
-                                <th>Total (Rp)</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($purchaseOrders as $index => $po)
+                            @foreach ($purchaseOrders as $index => $order)
                                 <tr>
-                                    <td>{{ $index + 1 + (($purchaseOrders->currentPage() - 1) * $purchaseOrders->perPage()) }}</td>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td><span class="badge bg-primary">{{ $order->po_number ?? 'PO-' . $order->id }}</span></td>
+                                    <td class="fw-semibold">{{ $order->vendor_name }}</td>
+                                    <td>{{ $order->order_date->format('d/m/Y') }}</td>
+                                    <td><strong>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong></td>
                                     <td>
-                                        <span class="fw-bold text-primary">{{ $po->po_number }}</span>
-                                        <br>
-                                        <small class="text-muted">
-                                            <i class="fa fa-user"></i> {{ $po->creator->name ?? '-' }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $po->vendor->company_name }}</strong>
-                                        <br>
-                                        <small class="text-muted">{{ $po->vendor->code }}</small>
-                                    </td>
-                                    <td>
-                                        {{ \Carbon\Carbon::parse($po->order_date)->format('d/m/Y') }}
-                                    </td>
-                                    <td>
-                                        @if($po->delivery_date)
-                                            {{ \Carbon\Carbon::parse($po->delivery_date)->format('d/m/Y') }}
+                                        @if($order->items)
+                                            @php
+                                                $items = json_decode($order->items, true);
+                                                $itemCount = count($items);
+                                            @endphp
+                                            <span class="badge bg-info">{{ $itemCount }} material</span>
+                                            <br>
+                                            <small>
+                                                @foreach(array_slice($items, 0, 2) as $item)
+                                                    {{ $item['material_code'] ?? '' }}<br>
+                                                @endforeach
+                                                @if($itemCount > 2)
+                                                    + {{ $itemCount - 2 }} lainnya
+                                                @endif
+                                            </small>
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="badge bg-secondary">0 material</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @php
-                                            $statusColors = [
-                                                'draft' => 'secondary',
-                                                'pending' => 'warning',
-                                                'approved' => 'success',
-                                                'completed' => 'info',
-                                                'rejected' => 'danger',
-                                                'cancelled' => 'dark',
-                                            ];
-                                            $statusLabels = [
-                                                'draft' => 'Draft',
-                                                'pending' => 'Pending',
-                                                'approved' => 'Approved',
-                                                'completed' => 'Completed',
-                                                'rejected' => 'Rejected',
-                                                'cancelled' => 'Cancelled',
-                                            ];
-                                        @endphp
-                                        <span class="badge bg-{{ $statusColors[$po->status] ?? 'secondary' }}">
-                                            {{ $statusLabels[$po->status] ?? $po->status }}
+                                        <span class="badge {{ $order->status == 'approved' ? 'bg-success' : ($order->status == 'pending' ? 'bg-warning' : ($order->status == 'rejected' ? 'bg-danger' : 'bg-secondary')) }}">
+                                            {{ ucfirst($order->status) }}
                                         </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            {{ $po->items_count ?? 0 }} item
-                                        </span>
-                                    </td>
-                                    <td class="fw-bold text-right">
-                                        Rp {{ number_format($po->grand_total, 0, ',', '.') }}
                                     </td>
                                     <td class="text-center">
-                                        {{-- Tombol Detail --}}
-                                        <a href="{{ route('purchase-orders.show', $po->id) }}" 
-                                           class="btn btn-outline-info btn-sm"
-                                           title="Detail PO">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                        
-                                        {{-- Tombol Edit (hanya untuk draft & pending) --}}
-                                        @if(in_array($po->status, ['draft', 'pending']))
-                                            <a href="{{ route('purchase-orders.edit', $po->id) }}" 
-                                               class="btn btn-outline-primary btn-sm"
-                                               title="Edit PO">
-                                                <i class="fa fa-edit"></i>
-                                            </a>
+                                        <a href="{{ route('purchase-order.show', $order->id) }}" class="btn btn-outline-info btn-sm" title="Detail PO"><i class="fa fa-eye"></i></a>
+                                        <a href="{{ route('purchase-order.edit', $order->id) }}" class="btn btn-outline-primary btn-sm" title="Edit PO"><i class="fa fa-edit"></i></a>
+                                        <a href="{{ route('purchase-order.print', $order->id) }}" class="btn btn-outline-secondary btn-sm" title="Print PO" target="_blank"><i class="fa fa-print"></i></a>
+                                        <form action="{{ route('purchase-order.destroy', $order->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus PO {{ $order->po_number }}?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus PO"><i class="fa fa-trash"></i></button>
+                                        </form>
+                                        @if($order->status == 'pending')
+                                        <form action="{{ route('purchase-order.approve', $order->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-success btn-sm" title="Approve PO"><i class="fa fa-check"></i></button>
+                                        </form>
                                         @endif
-                                        
-                                        {{-- Tombol Print --}}
-                                        <a href="{{ route('purchase-orders.print', $po->id) }}" 
-                                           target="_blank"
-                                           class="btn btn-outline-secondary btn-sm"
-                                           title="Print PO">
-                                            <i class="fa fa-print"></i>
-                                        </a>
-                                        
-                                        {{-- Tombol Hapus (hanya untuk draft & pending) --}}
-                                        @if(in_array($po->status, ['draft', 'pending']))
-                                            <form action="{{ route('purchase-orders.destroy', $po->id) }}" 
-                                                  method="POST" class="d-inline" 
-                                                  onsubmit="return confirm('Hapus PO {{ $po->po_number }}?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                        title="Hapus PO">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        @endif
-                                        
-                                        {{-- Tombol Aksi Status --}}
-                                        <div class="btn-group mt-1">
-                                            @if($po->status == 'draft')
-                                                <form action="{{ route('purchase-orders.submit', $po->id) }}" 
-                                                      method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" 
-                                                            class="btn btn-outline-warning btn-sm"
-                                                            title="Submit untuk Approval">
-                                                        <i class="fa fa-paper-plane"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                            
-                                            @if(auth()->user()->can_approve_po && $po->status == 'pending')
-                                                <form action="{{ route('purchase-orders.approve', $po->id) }}" 
-                                                      method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" 
-                                                            class="btn btn-outline-success btn-sm"
-                                                            title="Approve PO">
-                                                        <i class="fa fa-check"></i>
-                                                    </button>
-                                                </form>
-                                                <form action="{{ route('purchase-orders.reject', $po->id) }}" 
-                                                      method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" 
-                                                            class="btn btn-outline-danger btn-sm"
-                                                            title="Reject PO">
-                                                        <i class="fa fa-times"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                            
-                                            @if($po->status == 'approved')
-                                                <form action="{{ route('purchase-orders.complete', $po->id) }}" 
-                                                      method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" 
-                                                            class="btn btn-outline-info btn-sm"
-                                                            title="Mark as Completed">
-                                                        <i class="fa fa-check-double"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                            
-                                            @if(in_array($po->status, ['draft', 'pending', 'approved']))
-                                                <form action="{{ route('purchase-orders.cancel', $po->id) }}" 
-                                                      method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" 
-                                                            class="btn btn-outline-dark btn-sm"
-                                                            title="Cancel PO"
-                                                            onclick="return confirm('Batalkan PO {{ $po->po_number }}?')">
-                                                        <i class="fa fa-ban"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="text-center">
-                                        <div class="alert alert-info">
-                                            <i class="fa fa-info-circle"></i> Belum ada Purchase Order
-                                        </div>
-                                        <a href="{{ route('purchase-orders.create') }}" class="btn btn-primary">
-                                            <i class="fa fa-plus"></i> Buat PO Pertama
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                     
-                    {{-- Pagination --}}
                     @if($purchaseOrders->hasPages())
                     <div class="mt-3">
                         {{ $purchaseOrders->links() }}
@@ -390,121 +255,107 @@
     </div>
 </div>
 
-{{-- Modal Quick Actions --}}
-<div class="modal fade" id="quickActionModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Aksi Cepat</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="list-group">
-                    <a href="{{ route('purchase-orders.create') }}" class="list-group-item list-group-item-action">
-                        <i class="fa fa-plus-circle text-primary"></i> Buat PO Baru
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="printReport()">
-                        <i class="fa fa-print text-info"></i> Cetak Laporan
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="exportToExcel()">
-                        <i class="fa fa-file-excel text-success"></i> Export ke Excel
-                    </a>
-                    <a href="{{ route('purchase-orders.index') }}?status=pending" class="list-group-item list-group-item-action">
-                        <i class="fa fa-clock text-warning"></i> Lihat PO Pending
-                    </a>
-                    <a href="{{ route('vendor.index') }}" class="list-group-item list-group-item-action">
-                        <i class="fa fa-users text-secondary"></i> Kelola Vendor
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- CSS Tambahan --}}
-<style>
-.po-table td {
-    vertical-align: middle;
-}
-.po-table .badge {
-    font-size: 0.85em;
-}
-.stat-card {
-    border-radius: 8px;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-}
-.stat-card .card-body {
-    padding: 15px;
-    text-align: center;
-}
-.stat-card h3 {
-    margin: 10px 0 5px;
-    font-weight: bold;
-}
-.stat-card small {
-    opacity: 0.9;
-}
-.btn-group .btn-sm {
-    padding: 0.25rem 0.5rem;
-    margin: 0 2px;
-}
-</style>
-
-{{-- JavaScript --}}
 <script>
-// Fungsi untuk print laporan
-function printReport() {
-    const params = new URLSearchParams(window.location.search);
-    window.open('{{ route("purchase-orders.index") }}?print=1&' + params.toString(), '_blank');
-}
+let itemCounter = 1;
 
-// Fungsi untuk export ke Excel
-function exportToExcel() {
-    const params = new URLSearchParams(window.location.search);
-    params.append('export', 'excel');
-    window.location.href = '{{ route("purchase-orders.index") }}?' + params.toString();
-}
-
-// Fungsi untuk menampilkan PO pending
-function showPendingPO() {
-    const filterForm = document.getElementById('filterForm');
-    filterForm.querySelector('select[name="status"]').value = 'pending';
-    filterForm.submit();
-}
-
-// Auto refresh setiap 60 detik untuk PO pending
-@if(request('status') == 'pending')
-    setTimeout(() => {
-        location.reload();
-    }, 60000); // 60 detik
-@endif
-
-// Initialize tooltips
-$(document).ready(function() {
-    $('[title]').tooltip();
+function addItem() {
+    const container = document.getElementById('items-container');
+    const newItem = document.createElement('div');
+    newItem.className = 'item-row row mb-2';
+    newItem.innerHTML = `
+        <div class="col-md-5">
+            <select name="items[${itemCounter}][material_id]" class="form-control select-material" required>
+                <option value="">-- Pilih Material --</option>
+                @foreach($materials as $material)
+                    <option value="{{ $material->id }}" 
+                            data-unit="{{ $material->unit }}"
+                            data-price="{{ $material->price }}">
+                        {{ $material->code }} - {{ $material->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="items[${itemCounter}][quantity]" 
+                   class="form-control item-quantity" placeholder="Qty" 
+                   min="1" value="1" required>
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="items[${itemCounter}][unit]" 
+                   class="form-control item-unit" placeholder="Satuan" 
+                   readonly required>
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="items[${itemCounter}][unit_price]" 
+                   class="form-control item-price" placeholder="Harga" 
+                   min="0" step="0.01" required>
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(newItem);
+    itemCounter++;
     
-    // DataTable jika diperlukan
-    $('.po-table').DataTable({
-        "pageLength": 10,
-        "language": {
-            "search": "Cari:",
-            "lengthMenu": "Tampilkan _MENU_ data",
-            "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-            "paginate": {
-                "first": "Pertama",
-                "last": "Terakhir",
-                "next": "Berikutnya",
-                "previous": "Sebelumnya"
-            }
+    const select = newItem.querySelector('.select-material');
+    select.addEventListener('change', handleMaterialSelect);
+}
+
+function removeItem(button) {
+    button.closest('.item-row').remove();
+    updateTotal();
+}
+
+function handleMaterialSelect(event) {
+    const select = event.target;
+    const selectedOption = select.options[select.selectedIndex];
+    const row = select.closest('.item-row');
+    
+    if (selectedOption.value) {
+        const unit = selectedOption.getAttribute('data-unit');
+        const price = selectedOption.getAttribute('data-price');
+        
+        row.querySelector('.item-unit').value = unit || 'pcs';
+        row.querySelector('.item-price').value = price || 0;
+        
+        updateTotal();
+    }
+}
+
+function updateTotal() {
+    let total = 0;
+    document.querySelectorAll('.item-row').forEach(row => {
+        const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        total += quantity * price;
+    });
+    
+    document.getElementById('total_amount').value = total;
+    document.getElementById('total_amount_display').value = 'Rp ' + formatNumber(total);
+}
+
+function formatNumber(num) {
+    return num.toLocaleString('id-ID');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.select-material').forEach(select => {
+        select.addEventListener('change', handleMaterialSelect);
+    });
+    
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('item-quantity') || 
+            e.target.classList.contains('item-price')) {
+            updateTotal();
         }
     });
+    
+    const firstSelect = document.querySelector('.select-material');
+    if (firstSelect) {
+        firstSelect.dispatchEvent(new Event('change'));
+    }
 });
 </script>
 @endsection

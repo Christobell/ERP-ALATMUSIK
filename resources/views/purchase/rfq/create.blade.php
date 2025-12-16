@@ -1,82 +1,105 @@
 @extends('layouts.master')
 
-@section('title', 'Tambah Purchase Order')
+@section('title', 'Buat RFQ Baru')
 @section('content')
 <div class="pcoded-content">
     <div class="pcoded-inner-content">
         
         <div class="card">
             <div class="card-header">
-                <h5>Tambah Purchase Order Baru</h5>
+                <h5>Buat RFQ (Request for Quotation) Baru</h5>
             </div>
             <div class="card-block">
-                <form action="{{ route('purchase-order.store') }}" method="POST" id="poForm">
+                <form action="{{ route('rfq.store') }}" method="POST" id="rfqForm">
                     @csrf
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Nomor PO</label>
+                                <label class="col-sm-4 col-form-label">Nomor RFQ</label>
                                 <div class="col-sm-8">
-                                    <input type="text" name="po_number" class="form-control" 
-                                           placeholder="Contoh: PO-001" required>
+                                    <input type="text" name="rfq_number" class="form-control" 
+                                           placeholder="Contoh: RFQ-001" required>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Tanggal PO</label>
+                                <label class="col-sm-4 col-form-label">Judul RFQ</label>
                                 <div class="col-sm-8">
-                                    <input type="date" name="order_date" class="form-control" 
-                                           value="{{ date('Y-m-d') }}" required>
+                                    <input type="text" name="title" class="form-control" 
+                                           placeholder="Judul Request for Quotation" required>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="form-group row">
-                        <label class="col-sm-2 col-form-label">Vendor</label>
+                        <label class="col-sm-2 col-form-label">Deskripsi</label>
                         <div class="col-sm-10">
-                            <input type="text" name="vendor_name" class="form-control" 
-                                   placeholder="Nama vendor/perusahaan" required>
+                            <textarea name="description" class="form-control" rows="2" 
+                                      placeholder="Deskripsi kebutuhan"></textarea>
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Kontak Person</label>
+                                <label class="col-sm-4 col-form-label">Tanggal Request</label>
                                 <div class="col-sm-8">
-                                    <input type="text" name="contact_person" class="form-control" 
-                                           placeholder="Nama kontak di vendor">
+                                    <input type="date" name="request_date" class="form-control" 
+                                           value="{{ date('Y-m-d') }}" required>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Telepon</label>
+                                <label class="col-sm-4 col-form-label">Deadline</label>
                                 <div class="col-sm-8">
-                                    <input type="text" name="vendor_phone" class="form-control" 
-                                           placeholder="Telepon vendor">
+                                    <input type="date" name="deadline_date" class="form-control" 
+                                           value="{{ date('Y-m-d', strtotime('+7 days')) }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                       <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Requestor</label>
+                                <div class="col-sm-8">
+                                    <select name="requested_by" class="form-control" required>
+                                        <option value="">-- Pilih Requestor --</option>
+                                        @forelse($users as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                        @empty
+                                            <option value="" disabled>Tidak ada data users</option>
+                                        @endforelse
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Departemen</label>
+                                <div class="col-sm-8">
+                                    <select name="department_id" class="form-control" required>
+                                        <option value="">-- Pilih Departemen --</option>
+                                        @foreach($departments as $dept)
+                                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="form-group row">
-                        <label class="col-sm-2 col-form-label">Alamat Pengiriman</label>
-                        <div class="col-sm-10">
-                            <textarea name="delivery_address" class="form-control" rows="2" 
-                                      placeholder="Alamat lengkap pengiriman" required></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label">Item/Material</label>
+                        <label class="col-sm-2 col-form-label">Items/Material</label>
                         <div class="col-sm-10">
                             <div id="items-container">
                                 <div class="item-row row mb-2">
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
                                         <select name="items[0][material_id]" class="form-control select-material" required>
                                             <option value="">-- Pilih Material --</option>
                                             @foreach($materials as $material)
@@ -98,10 +121,10 @@
                                                class="form-control item-unit" 
                                                placeholder="Satuan" readonly required>
                                     </div>
-                                    <div class="col-md-2">
-                                        <input type="number" name="items[0][unit_price]" 
-                                               class="form-control item-price" 
-                                               placeholder="Harga" min="0" step="0.01" required>
+                                    <div class="col-md-3">
+                                        <input type="text" name="items[0][specifications]" 
+                                               class="form-control" 
+                                               placeholder="Spesifikasi tambahan">
                                     </div>
                                     <div class="col-md-1">
                                         <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
@@ -119,11 +142,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Total Amount</label>
+                                <label class="col-sm-4 col-form-label">Estimated Budget</label>
                                 <div class="col-sm-8">
-                                    <input type="text" name="total_amount_display" id="total_amount_display" 
-                                           class="form-control" readonly value="Rp 0">
-                                    <input type="hidden" name="total_amount" id="total_amount" value="0">
+                                    <input type="number" name="estimated_budget" id="estimated_budget" 
+                                           class="form-control" placeholder="Estimasi budget" 
+                                           min="0" step="0.01" required>
                                 </div>
                             </div>
                         </div>
@@ -133,9 +156,7 @@
                                 <div class="col-sm-8">
                                     <select name="status" class="form-control" required>
                                         <option value="draft" selected>Draft</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="approved">Approved</option>
-                                        <option value="rejected">Rejected</option>
+                                        <option value="pending">Pending (Send to Vendor)</option>
                                     </select>
                                 </div>
                             </div>
@@ -146,16 +167,16 @@
                         <label class="col-sm-2 col-form-label">Catatan</label>
                         <div class="col-sm-10">
                             <textarea name="notes" class="form-control" rows="2" 
-                                      placeholder="Catatan tambahan"></textarea>
+                                      placeholder="Catatan tambahan untuk vendor"></textarea>
                         </div>
                     </div>
                     
                     <div class="form-group row">
                         <div class="col-sm-10 offset-sm-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-save"></i> Simpan Purchase Order
+                                <i class="fa fa-save"></i> Simpan RFQ
                             </button>
-                            <a href="{{ route('purchase-order.index') }}" class="btn btn-default">Batal</a>
+                            <a href="{{ route('rfq.index') }}" class="btn btn-default">Batal</a>
                         </div>
                     </div>
                 </form>
@@ -173,7 +194,7 @@ function addItem() {
     const newItem = document.createElement('div');
     newItem.className = 'item-row row mb-2';
     newItem.innerHTML = `
-        <div class="col-md-5">
+        <div class="col-md-4">
             <select name="items[${itemCounter}][material_id]" class="form-control select-material" required>
                 <option value="">-- Pilih Material --</option>
                 @foreach($materials as $material)
@@ -195,10 +216,9 @@ function addItem() {
                    class="form-control item-unit" placeholder="Satuan" 
                    readonly required>
         </div>
-        <div class="col-md-2">
-            <input type="number" name="items[${itemCounter}][unit_price]" 
-                   class="form-control item-price" placeholder="Harga" 
-                   min="0" step="0.01" required>
+        <div class="col-md-3">
+            <input type="text" name="items[${itemCounter}][specifications]" 
+                   class="form-control" placeholder="Spesifikasi tambahan">
         </div>
         <div class="col-md-1">
             <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
@@ -215,7 +235,7 @@ function addItem() {
 
 function removeItem(button) {
     button.closest('.item-row').remove();
-    updateTotal();
+    updateBudget();
 }
 
 function handleMaterialSelect(event) {
@@ -228,26 +248,19 @@ function handleMaterialSelect(event) {
         const price = selectedOption.getAttribute('data-price');
         
         row.querySelector('.item-unit').value = unit || 'pcs';
-        row.querySelector('.item-price').value = price || 0;
-        
-        updateTotal();
+        updateBudget();
     }
 }
 
-function updateTotal() {
+function updateBudget() {
     let total = 0;
     document.querySelectorAll('.item-row').forEach(row => {
         const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        const price = parseFloat(row.querySelector('.select-material').options[row.querySelector('.select-material').selectedIndex]?.getAttribute('data-price')) || 0;
         total += quantity * price;
     });
     
-    document.getElementById('total_amount').value = total;
-    document.getElementById('total_amount_display').value = 'Rp ' + formatNumber(total);
-}
-
-function formatNumber(num) {
-    return num.toLocaleString('id-ID');
+    document.getElementById('estimated_budget').value = total.toFixed(2);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -256,9 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('item-quantity') || 
-            e.target.classList.contains('item-price')) {
-            updateTotal();
+        if (e.target.classList.contains('item-quantity')) {
+            updateBudget();
         }
     });
     

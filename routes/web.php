@@ -7,6 +7,7 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\RfqController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -48,18 +49,30 @@ Route::get('/vendor/search', [VendorController::class, 'search'])->name('vendor.
 Route::get('/vendor/select2', [VendorController::class, 'getVendorsSelect2'])->name('vendor.select2');
 Route::get('/vendor/export/{type?}', [VendorController::class, 'export'])->name('vendor.export');
 
-// Purchase Order Routes
-Route::resource('purchase-order', PurchaseOrderController::class);
-Route::put('/purchase-order/{id}/update-status', [PurchaseOrderController::class, 'updateStatus'])->name('purchase-orders.update-status');
-Route::get('/purchase-order/{id}/print', [PurchaseOrderController::class, 'print'])->name('purchase-orders.print');
-Route::get('purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
-//Route::middleware(['auth'])->group(function () {
-Route::resource('purchase-orders', PurchaseOrderController::class)->except(['show']);
-Route::get('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
-Route::post('purchase-orders/{purchaseOrder}/submit', [PurchaseOrderController::class, 'submit'])->name('purchase-orders.submit');
-Route::post('purchase-orders/{purchaseOrder}/approve', [PurchaseOrderController::class, 'approve'])->name('purchase-orders.approve');
-Route::post('purchase-orders/{purchaseOrder}/reject', [PurchaseOrderController::class, 'reject'])->name('purchase-orders.reject');
-Route::post('purchase-orders/{purchaseOrder}/complete', [PurchaseOrderController::class, 'complete'])->name('purchase-orders.complete');
-Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
-Route::get('purchase-orders/{purchaseOrder}/print', [PurchaseOrderController::class, 'print'])->name('purchase-orders.print');
-Route::post('/purchase-orders', [PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
+Route::middleware(['web'])->group(function () {
+    Route::prefix('purchase-order')->name('purchase-order.')->group(function () {
+        Route::get('/', [PurchaseOrderController::class, 'index'])->name('index');
+        Route::get('/create', [PurchaseOrderController::class, 'create'])->name('create');
+        Route::post('/', [PurchaseOrderController::class, 'store'])->name('store');
+        Route::get('/{id}', [PurchaseOrderController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [PurchaseOrderController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PurchaseOrderController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PurchaseOrderController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/approve', [PurchaseOrderController::class, 'approve'])->name('approve');
+        Route::get('/{id}/print', [PurchaseOrderController::class, 'print'])->name('print');
+    });
+});
+
+// RFQ Routes
+Route::prefix('rfq')->name('rfq.')->group(function () {
+    Route::get('/', [RfqController::class, 'index'])->name('index');
+    Route::get('/create', [RfqController::class, 'create'])->name('create');
+    Route::post('/', [RfqController::class, 'store'])->name('store');
+    Route::get('/{id}', [RfqController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [RfqController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [RfqController::class, 'update'])->name('update');
+    Route::delete('/{id}', [RfqController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/send', [RfqController::class, 'sendToVendor'])->name('send');
+    Route::post('/{id}/approve', [RfqController::class, 'approve'])->name('approve');
+    Route::get('/{id}/print', [RfqController::class, 'print'])->name('print');
+});
